@@ -19,7 +19,12 @@ func LoadURL(url string) (*Node, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return Parse(resp.Body)
+	// Checking the HTTP Content-Type value from the response headers.(#39)
+	v := strings.ToLower(resp.Header.Get("Content-Type"))
+	if v == "text/xml" || v == "application/xml" {
+		return Parse(resp.Body)
+	}
+	return nil, fmt.Errorf("invalid XML document(%s)", v)
 }
 
 // Parse returns the parse tree for the XML from the given Reader.
@@ -164,7 +169,11 @@ func (p *parser) parse() (*Node, error) {
 					if p.streamElementFilter == nil || QuerySelector(p.doc, p.streamElementFilter) != nil {
 						return p.streamNode, nil
 					}
-					// otherwise, this isn't our target node. clean things up.
+					// otherwise, this isn't our target node, clean things up.
+					// note we also remove the underlying *Node from the node tree, to prevent
+					// future stream node candidate selection error.
+					RemoveFromTree(p.streamNode)
+					p.prev = p.streamNodePrev
 					p.streamNode = nil
 					p.streamNodePrev = nil
 				}
