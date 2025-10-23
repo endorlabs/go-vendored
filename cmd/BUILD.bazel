@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "cmd_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/Shulammite-Aso/bazel-demo-app/cmd",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//bazel",
+        "//handlers",
+        "//vendor/github.com/antchfx/xmlquery",
+        "//vendor/github.com/bgentry/go-netrc/netrc",
+        "//vendor/github.com/bwmarrin/snowflake",
+        "//vendor/github.com/google/uuid",
+        "//vendor/github.com/gorilla/mux",
+        "//vendor/github.com/sirupsen/logrus",
+    ],
+)
+
+go_binary(
+    name = "cmd",
+    embed = [":cmd_lib"],
+    visibility = ["//visibility:public"],
+)
